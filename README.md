@@ -1,6 +1,7 @@
 - [Introduction](#introduction)
   - [Export](#export)
   - [Import](#import)
+  - [Properties](#properties)
 
 # Introduction
 This PowerShell Script exports AD values to a CSV file.
@@ -21,4 +22,12 @@ When the Parameter is set to `-testOnly:$false` the data will be written to AD v
 ```PowerShell
     .\ExportImportADUsersByCSV.ps1 -action import -OU "OU=MainSite,OU=Company" -testOnly:$true
 ```
-
+## Properties
+With this script it is possible to read also non standard Properties from AD and set them also via this script.
+To get all possible Properties use `Get-ADUser <user> -Properties * | Get-Member`
+In the Line:
+```
+$Properties = "Name,Title,Department,Description,Company,OfficePhone,Office,WWWHomePage,Manager,sAMAccountName"
+```
+You can change the Properies and add others. As the script relies on the `sAMAccountName` this column must be included.
+Best put it to the end, so noone bothers to change that. :-)
