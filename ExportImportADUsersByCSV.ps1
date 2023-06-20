@@ -61,10 +61,18 @@ switch ($action)
             foreach($property in $Properties -split ",")
             {
                 # only the Manager name is extracted, usally "Manager" contains the DistinguishedName
+
                 if ('Manager' -eq $property -and $null -ne $ADUser.Manager)
                 {
-                    # the "useraccountcontrol=512" filters for a normal user, which is also enabled                    
-                    $values.add('Manager', (Get-ADUser -LdapFilter "(Name=$($ADUser.Manager))(useraccountcontrol=512)" | Select-Object -ExpandProperty Name))
+                    $manager = Get-ADUser($ADUser.Manager)|Select-Object Name, Enabled
+                    if ($manager.Enabled -eq $true)
+                    {
+                        $values.add('Manager', $manager.Name)
+                    }
+                    else
+                    {
+                        $values.add('Manager', $null)
+                    }
                 }
                 else
                 {
@@ -91,7 +99,7 @@ switch ($action)
             if($ADUser)
             {
                 foreach($property in $Properties -split ",")
-                {                
+                {
                     $command = ""
                     if([bool]($_.PSobject.Properties.name -match $property) -and "" -ne $_.$property)
                     {
@@ -100,7 +108,7 @@ switch ($action)
                             # check if the manager is existent and enabled
                             $manager = (Get-ADUser -LdapFilter "(Name=$($_.Manager))(useraccountcontrol=512)")
 
-                            if ($manager -and "" -ne $_.Manager -and $manager.DistinguishedName -ne $ADUser.Manager)
+                            if ($manager -and $manager.Enabled -eq $true -and $manager.DistinguishedName -ne $ADUser.Manager)
                             {
                                 $command = "Get-ADUser $($_.sAMAccountName) | Set-ADUser -Manager '$($manager.DistinguishedName)' $whatIf"
                             }
